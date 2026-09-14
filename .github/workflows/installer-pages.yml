@@ -1,0 +1,35 @@
+name: Publish installer to Pages
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/installer-pages.yml]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: installer-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Download and verify installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site/1.0.0
+          curl --fail --location --retry 3 --output site/1.0.0/Jiying-Setup-1.0.0-x64.exe https://github.com/Links2008/-/releases/download/v2/Jiying-Setup-1.0.0-x64.exe
+          echo '7ff290a93254b3da2f59b84e78b7d19f9f6e3cce0493d7c75eeb3e6559af98eb  site/1.0.0/Jiying-Setup-1.0.0-x64.exe' | sha256sum --check
+          printf '%s\n' '<!doctype html><meta charset="utf-8"><title>Jiying downloads</title><a href="1.0.0/Jiying-Setup-1.0.0-x64.exe">Jiying 1.0.0 for Windows x64</a>' > site/index.html
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
