@@ -18,6 +18,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
       - name: Download and verify installer
         shell: bash
